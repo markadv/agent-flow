@@ -80,7 +80,7 @@ interface MainChatPanelProps {
 
 export function MainChatPanel({ conversation, onSend }: MainChatPanelProps) {
   const [draft, setDraft] = useState('')
-  const { ref: logRef } = useAutoScroll(conversation.length, true)
+  const { ref: logRef, handleScroll } = useAutoScroll(conversation.length, true)
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key !== 'Enter' || e.shiftKey) return
@@ -95,6 +95,7 @@ export function MainChatPanel({ conversation, onSend }: MainChatPanelProps) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div
         ref={logRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto space-y-1.5 p-3"
         style={{ minHeight: 0 }}
       >
