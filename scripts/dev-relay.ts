@@ -65,6 +65,36 @@ async function main() {
       return
     }
 
+    if (req.method === 'POST' && req.url === '/chat') {
+      let body = ''
+      req.on('data', (chunk: Buffer) => { body += chunk.toString() })
+      req.on('end', () => {
+        try {
+          const parsed = JSON.parse(body) as { message?: unknown }
+          if (typeof parsed.message !== 'string' || !parsed.message.trim()) {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: 'message must be a non-empty string' }))
+            return
+          }
+          // Read at request time so the session can change without restarting the relay
+          const session = process.env.AGENT_FLOW_TMUX_SESSION ?? 'levi'
+          const { execFileSync } = require('child_process') as typeof import('child_process')
+          try {
+            execFileSync('tmux', ['send-keys', '-t', session, parsed.message, 'Enter'], { stdio: 'ignore' })
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ ok: true }))
+          } catch {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: `tmux session '${session}' not found or send-keys failed` }))
+          }
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'invalid JSON' }))
+        }
+      })
+      return
+    }
+
     res.writeHead(200, { 'Content-Type': 'text/plain' })
     res.end('Agent Flow Dev Relay')
   })
