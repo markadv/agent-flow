@@ -4,6 +4,7 @@
  * that includes CORS headers for cross-origin dev mode (Next.js on :3000).
  */
 import * as http from 'http'
+import { execFileSync } from 'child_process'
 import { createRelay } from './relay'
 import { DEFAULT_RELAY_PORT, DEV_WEB_ORIGIN_PATTERN } from '../extension/src/constants'
 
@@ -78,9 +79,8 @@ async function main() {
           }
           // Read at request time so the session can change without restarting the relay
           const session = process.env.AGENT_FLOW_TMUX_SESSION ?? 'levi'
-          const { execFileSync } = require('child_process') as typeof import('child_process')
           try {
-            execFileSync('tmux', ['send-keys', '-t', session, parsed.message, 'Enter'], { stdio: 'ignore' })
+            execFileSync('tmux', ['send-keys', '-t', session, parsed.message, 'Enter'], { stdio: 'ignore', timeout: 5000 })
             res.writeHead(200, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify({ ok: true }))
           } catch {
