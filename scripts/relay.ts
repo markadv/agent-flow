@@ -463,45 +463,26 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
     return blocks
   }
 
-  function findSkillsDirs(dir: string, depth: number): string[] {
-    if (depth <= 0) return []
-    const candidate = path.join(dir, 'skills')
-    if (fs.existsSync(candidate)) return [candidate]
-    let entries: fs.Dirent[]
+  function getSkills(): SkillInfo[] {
+    const skillsDir = path.join(os.homedir(), '.claude', 'skills')
+    let names: string[]
     try {
-      entries = fs.readdirSync(dir, { withFileTypes: true })
+      names = fs.readdirSync(skillsDir)
     } catch {
       return []
     }
-    return entries
-      .filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules')
-      .flatMap(e => findSkillsDirs(path.join(dir, e.name), depth - 1))
-  }
-
-  function getSkills(): SkillInfo[] {
-    const skillsDirs = findSkillsDirs(workspace, 3)
-    const seen = new Set<string>()
-    const results: SkillInfo[] = []
-
-    for (const skillsDir of skillsDirs) {
-      let entries: fs.Dirent[]
-      try {
-        entries = fs.readdirSync(skillsDir, { withFileTypes: true })
-      } catch {
-        continue
-      }
-      for (const e of entries) {
-        if (!e.isDirectory() || seen.has(e.name)) continue
-        const skillMd = path.join(skillsDir, e.name, 'SKILL.md')
-        if (!fs.existsSync(skillMd)) continue
+    return names
+      .filter(name => {
+        try { return fs.statSync(path.join(skillsDir, name)).isDirectory() } catch { return false }
+      })
+      .flatMap((name): SkillInfo[] => {
+        const skillMd = path.join(skillsDir, name, 'SKILL.md')
+        if (!fs.existsSync(skillMd)) return []
         const dots = extractDotBlocks(fs.readFileSync(skillMd, 'utf8'))
-        if (!dots.length) continue
-        seen.add(e.name)
-        results.push({ name: e.name, dots })
-      }
-    }
-
-    return results.sort((a, b) => a.name.localeCompare(b.name))
+        if (!dots.length) return []
+        return [{ name, dots }]
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
   }
 
   const agentFlowVersion = resolveAgentFlowVersion()

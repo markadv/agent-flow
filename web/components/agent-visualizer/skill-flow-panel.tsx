@@ -1,18 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Z } from '@/lib/agent-types'
 import { COLORS } from '@/lib/colors'
-import { PanelHeader, SlidingPanel, stopPropagationHandlers } from './shared-ui'
 import { useSkills } from '@/hooks/use-skills'
 import type { SkillInfo } from '../../../scripts/relay'
 
 interface SkillFlowPanelProps {
   visible: boolean
-  onClose: () => void
 }
 
-export function SkillFlowPanel({ visible, onClose }: SkillFlowPanelProps) {
+export function SkillFlowPanel({ visible }: SkillFlowPanelProps) {
   const skills = useSkills()
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [selectedDot, setSelectedDot] = useState(0)
@@ -85,34 +82,8 @@ export function SkillFlowPanel({ visible, onClose }: SkillFlowPanelProps) {
   if (!visible) return null
 
   return (
-    <SlidingPanel
-      visible={visible}
-      position={{ right: 0, top: 0, bottom: 0 }}
-      axis="X"
-      offset={20}
-      zIndex={Z.transcriptPanel}
-      width={640}
-    >
-      <div
-        className="h-full flex flex-col"
-        style={{
-          background: COLORS.panelBg,
-          backdropFilter: 'blur(24px)',
-          borderLeft: `1px solid ${COLORS.holoBorder10}`,
-        }}
-        {...stopPropagationHandlers}
-      >
-        <div
-          className="flex-shrink-0 px-4 py-2.5"
-          style={{ borderBottom: `1px solid ${COLORS.holoBorder08}` }}
-        >
-          <PanelHeader onClose={onClose} className="">
-            <span className="text-[10px] font-mono tracking-widest font-semibold" style={{ color: COLORS.panelLabel }}>
-              SKILL FLOWS
-            </span>
-          </PanelHeader>
-        </div>
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+    <div className="h-full flex flex-col" style={{ overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           {/* Sidebar: skill list */}
           <div style={{ width: 180, overflowY: 'auto', borderRight: `1px solid ${COLORS.holoBorder08}`, flexShrink: 0, padding: '8px 0' }}>
             {skills.length === 0 && (
@@ -181,6 +152,5 @@ export function SkillFlowPanel({ visible, onClose }: SkillFlowPanelProps) {
           </div>
         </div>
       </div>
-    </SlidingPanel>
   )
 }

@@ -18,7 +18,7 @@ interface RightPanelProps {
 }
 
 const TABS: { id: RightPanelTab; label: string }[] = [
-  { id: 'chat', label: 'Chat' },
+  { id: 'chat', label: 'Chat back' },
   { id: 'brainstorm', label: 'Brainstorm' },
   { id: 'skills', label: 'Skill Flows' },
 ]
@@ -66,10 +66,10 @@ export function RightPanel({
         <MainChatPanel visible={activeTab === 'chat'} conversation={mainConversation} onSend={onSend} />
       </div>
       <div style={{ flex: 1, overflow: 'hidden', display: activeTab === 'brainstorm' ? 'flex' : 'none', flexDirection: 'column' }}>
-        <BrainstormPanel visible html={brainstormHtml} onClose={onClose} />
+        <BrainstormPanel visible html={brainstormHtml} />
       </div>
       <div style={{ flex: 1, overflow: 'hidden', display: activeTab === 'skills' ? 'flex' : 'none', flexDirection: 'column' }}>
-        <SkillFlowPanel visible onClose={onClose} />
+        <SkillFlowPanel visible />
       </div>
     </div>
   )
