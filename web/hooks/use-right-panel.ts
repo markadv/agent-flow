@@ -30,12 +30,10 @@ export function useRightPanel(): RightPanelState {
 
   useEffect(() => {
     if (!skills.length) return
-    setVisible(prev => {
-      if (prev) return prev
-      setActiveTab('skills')
-      return true
-    })
-  }, [skills.length])
+    if (visible) return
+    setActiveTab('skills')
+    setVisible(true)
+  }, [skills.length, visible])
 
   return { visible, activeTab, brainstormHtml: brainstorm.html, skills, setVisible, setActiveTab }
 }
