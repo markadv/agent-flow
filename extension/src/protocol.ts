@@ -213,3 +213,7 @@ export interface ClaudeHookEntry {
   hooks?: ClaudeHookDef[]
 }
 
+export interface BrainstormUpdateEvent {
+  type: 'brainstorm-update'
+  html: string
+}
