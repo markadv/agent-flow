@@ -2,23 +2,31 @@
 
 import { BrainstormPanel } from './brainstorm-panel'
 import { SkillFlowPanel } from './skill-flow-panel'
+import { MainChatPanel } from './chat-panel'
 import type { RightPanelTab } from '@/hooks/use-right-panel'
+import type { ConversationMessage } from '@/hooks/simulation/types'
 import { COLORS } from '@/lib/colors'
 
 interface RightPanelProps {
   visible: boolean
   activeTab: RightPanelTab
   brainstormHtml: string | null
+  mainConversation: ConversationMessage[]
   onTabChange: (tab: RightPanelTab) => void
+  onSend: (message: string) => void
   onClose: () => void
 }
 
 const TABS: { id: RightPanelTab; label: string }[] = [
+  { id: 'chat', label: 'Chat' },
   { id: 'brainstorm', label: 'Brainstorm' },
   { id: 'skills', label: 'Skill Flows' },
 ]
 
-export function RightPanel({ visible, activeTab, brainstormHtml, onTabChange, onClose }: RightPanelProps) {
+export function RightPanel({
+  visible, activeTab, brainstormHtml, mainConversation,
+  onTabChange, onSend, onClose,
+}: RightPanelProps) {
   if (!visible) return null
 
   return (
@@ -30,7 +38,6 @@ export function RightPanel({ visible, activeTab, brainstormHtml, onTabChange, on
         display: 'flex', flexDirection: 'column', zIndex: 100,
       }}
     >
-      {/* Tab strip */}
       <div style={{ display: 'flex', borderBottom: `1px solid ${COLORS.holoBorder10}`, flexShrink: 0 }}>
         {TABS.map(tab => (
           <button
@@ -54,7 +61,10 @@ export function RightPanel({ visible, activeTab, brainstormHtml, onTabChange, on
           ×
         </button>
       </div>
-      {/* Panels — display:none preserves state without unmounting */}
+      {/* display:none preserves component state (skill selection, pan position) without unmounting */}
+      <div style={{ flex: 1, overflow: 'hidden', display: activeTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
+        <MainChatPanel conversation={mainConversation} onSend={onSend} />
+      </div>
       <div style={{ flex: 1, overflow: 'hidden', display: activeTab === 'brainstorm' ? 'flex' : 'none', flexDirection: 'column' }}>
         <BrainstormPanel visible html={brainstormHtml} onClose={onClose} />
       </div>
