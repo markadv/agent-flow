@@ -23,6 +23,11 @@ import {
 import { setLogLevel } from '../extension/src/logger'
 import type { TelemetryClient } from './telemetry'
 
+export interface SkillInfo {
+  name: string
+  dots: string[]
+}
+
 const MAX_EVENT_BUFFER = 5000
 const DISCOVERY_DIR = path.join(os.homedir(), '.claude', 'agent-flow')
 const CLAUDE_DIR = path.join(os.homedir(), '.claude', 'projects')
@@ -349,6 +354,10 @@ function removeDiscoveryFile() {
 export interface Relay {
   /** Handle an incoming SSE connection */
   handleSSE: (req: http.IncomingMessage, res: http.ServerResponse) => void
+  /** Push brainstorm HTML to all SSE clients */
+  setBrainstormContent: (html: string) => void
+  /** Return skills with dot diagram blocks from the workspace's skills/ directory */
+  getSkills: () => SkillInfo[]
   /** Clean up all resources */
   dispose: () => void
 }
@@ -439,6 +448,41 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
   const relaySessionId = `relay-${process.pid}-${Math.floor(sessionStart / 1000)}`
   sessionEventCount = 0
 
+  let brainstormHtml: string | null = null
+
+  function setBrainstormContent(html: string): void {
+    brainstormHtml = html
+    broadcast(JSON.stringify({ type: 'brainstorm-update', html }))
+  }
+
+  function extractDotBlocks(content: string): string[] {
+    const blocks: string[] = []
+    const re = /```dot\n([\s\S]*?)```/g
+    let m: RegExpExecArray | null
+    while ((m = re.exec(content)) !== null) blocks.push(m[1].trim())
+    return blocks
+  }
+
+  function getSkills(): SkillInfo[] {
+    const skillsDir = path.join(workspace, 'skills')
+    let entries: fs.Dirent[]
+    try {
+      entries = fs.readdirSync(skillsDir, { withFileTypes: true })
+    } catch {
+      return []
+    }
+    return entries
+      .filter(e => e.isDirectory())
+      .flatMap((e): SkillInfo[] => {
+        const skillMd = path.join(skillsDir, e.name, 'SKILL.md')
+        if (!fs.existsSync(skillMd)) return []
+        const dots = extractDotBlocks(fs.readFileSync(skillMd, 'utf8'))
+        if (!dots.length) return []
+        return [{ name: e.name, dots }]
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }
+
   const agentFlowVersion = resolveAgentFlowVersion()
 
   const baseEvent = () => ({
@@ -464,6 +508,9 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
   })
 
   return {
+    setBrainstormContent,
+    getSkills,
+
     handleSSE(req: http.IncomingMessage, res: http.ServerResponse) {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
