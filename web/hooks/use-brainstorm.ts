@@ -13,6 +13,8 @@ export function useBrainstorm(): BrainstormState {
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
+      // Accept messages from same origin (SSE bridge) or VS Code webview (origin 'null')
+      if (event.origin !== window.location.origin && event.origin !== 'null') return
       const data = event.data as Partial<BrainstormUpdateEvent>
       if (data?.type !== 'brainstorm-update' || typeof data.html !== 'string') return
       setState({ html: data.html, hasContent: true })

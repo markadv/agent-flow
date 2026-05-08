@@ -44,7 +44,7 @@ export function BrainstormPanel({ visible, html, onClose }: BrainstormPanelProps
         {html ? (
           <iframe
             srcDoc={html}
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts"
             style={{ width: '100%', flex: 1, border: 'none', display: 'block' }}
             title="Brainstorm companion"
           />
