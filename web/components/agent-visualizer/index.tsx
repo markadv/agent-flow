@@ -24,6 +24,8 @@ import { MOCK_DURATION } from "@/lib/mock-scenario"
 import { MessageFeedPanel } from "./message-feed-panel"
 import { TopBar } from "./top-bar"
 import { useAudioEffects } from "@/hooks/use-audio-effects"
+import { RightPanel } from './right-panel'
+import { useRightPanel } from '@/hooks/use-right-panel'
 
 export function AgentVisualizer() {
   const bridge = useVSCodeBridge()
@@ -62,6 +64,7 @@ export function AgentVisualizer() {
   })
 
   const selection = useSelectionState({ agents, toolCalls, discoveries })
+  const rightPanel = useRightPanel()
 
   const [showStats, setShowStats] = useState(false)
   const [showHexGrid, setShowHexGrid] = useState(true)
@@ -389,6 +392,15 @@ export function AgentVisualizer() {
         onClose={() => setShowTimeline(false)}
       />
 
+      {/* Right panel: Brainstorm / Skill Flow */}
+      <RightPanel
+        visible={rightPanel.visible}
+        activeTab={rightPanel.activeTab}
+        brainstormHtml={rightPanel.brainstormHtml}
+        onTabChange={rightPanel.setActiveTab}
+        onClose={() => rightPanel.setVisible(false)}
+      />
+
       {/* Top bar: session tabs + info/controls */}
       <TopBar
         sessions={bridge.sessions}
@@ -408,6 +420,8 @@ export function AgentVisualizer() {
         onTogglePanel={toggleExclusivePanel}
         onToggleTimeline={() => setShowTimeline(prev => !prev)}
         onToggleMute={handleToggleMute}
+        showRightPanel={rightPanel.visible}
+        onToggleRightPanel={() => rightPanel.setVisible(!rightPanel.visible)}
       />
     </div>
     </OpenFileProvider>
