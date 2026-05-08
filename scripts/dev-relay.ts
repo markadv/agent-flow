@@ -8,7 +8,7 @@ import { createRelay } from './relay'
 import { DEFAULT_RELAY_PORT, DEV_WEB_ORIGIN_PATTERN } from '../extension/src/constants'
 
 async function main() {
-  const workspace = process.argv[2] || process.cwd()
+  const workspace = process.argv[2] || process.env.AGENT_FLOW_WORKSPACE || process.cwd()
 
   console.log('Starting Agent Flow dev relay...\n')
   console.log(`Workspace: ${workspace}`)
@@ -23,7 +23,7 @@ async function main() {
       res.setHeader('Access-Control-Allow-Origin', origin)
       res.setHeader('Vary', 'Origin')
     }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
     if (req.method === 'OPTIONS') {
@@ -34,6 +34,35 @@ async function main() {
 
     if (req.url === '/events') {
       return relay.handleSSE(req, res)
+    }
+
+    if (req.method === 'POST' && req.url === '/brainstorm') {
+      let body = ''
+      req.on('data', (chunk: Buffer) => { body += chunk.toString() })
+      req.on('end', () => {
+        try {
+          const parsed = JSON.parse(body) as { html?: unknown }
+          if (typeof parsed.html !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: 'html must be a string' }))
+            return
+          }
+          relay.setBrainstormContent(parsed.html)
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: true }))
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'invalid JSON' }))
+        }
+      })
+      return
+    }
+
+    if (req.method === 'GET' && req.url === '/skills') {
+      const skills = relay.getSkills()
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ skills }))
+      return
     }
 
     res.writeHead(200, { 'Content-Type': 'text/plain' })
