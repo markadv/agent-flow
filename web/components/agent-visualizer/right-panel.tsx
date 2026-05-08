@@ -1,8 +1,8 @@
 'use client'
 
 import { BrainstormPanel } from './brainstorm-panel'
-import { SkillFlowPanel } from './skill-flow-panel'
 import { MainChatPanel } from './chat-panel'
+import { SkillFlowPanel } from './skill-flow-panel'
 import type { RightPanelTab } from '@/hooks/use-right-panel'
 import type { ConversationMessage } from '@/hooks/simulation/types'
 import { COLORS } from '@/lib/colors'

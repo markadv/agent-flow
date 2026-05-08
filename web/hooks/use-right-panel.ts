@@ -34,11 +34,13 @@ export function useRightPanel(mainConversation: ConversationMessage[]): RightPan
     setVisible(true)
   }, [brainstorm.hasContent])
 
+  const hasSkills = skills.length > 0
+
   useEffect(() => {
-    if (!skills.length) return
+    if (!hasSkills) return
     setActiveTab('skills')
     setVisible(true)
-  }, [skills.length])
+  }, [hasSkills])
 
   const onSend = useCallback(async (message: string) => {
     try {
