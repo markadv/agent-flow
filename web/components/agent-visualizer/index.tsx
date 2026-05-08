@@ -64,7 +64,17 @@ export function AgentVisualizer() {
   })
 
   const selection = useSelectionState({ agents, toolCalls, discoveries })
-  const rightPanel = useRightPanel()
+
+  const mainAgent = useMemo(() => {
+    for (const [, agent] of agents) {
+      if (agent.isMain) return agent
+    }
+    return null
+  }, [agents])
+
+  const mainConversation = mainAgent ? (conversations.get(mainAgent.name) ?? []) : []
+
+  const rightPanel = useRightPanel(mainConversation)
 
   const [showStats, setShowStats] = useState(false)
   const [showHexGrid, setShowHexGrid] = useState(true)
@@ -397,7 +407,9 @@ export function AgentVisualizer() {
         visible={rightPanel.visible}
         activeTab={rightPanel.activeTab}
         brainstormHtml={rightPanel.brainstormHtml}
+        mainConversation={rightPanel.mainConversation}
         onTabChange={rightPanel.setActiveTab}
+        onSend={rightPanel.onSend}
         onClose={() => rightPanel.setVisible(false)}
       />
 
