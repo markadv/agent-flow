@@ -72,7 +72,10 @@ export function AgentVisualizer() {
     return null
   }, [agents])
 
-  const mainConversation = mainAgent ? (conversations.get(mainAgent.name) ?? []) : []
+  const mainConversation = useMemo(
+    () => (mainAgent ? (conversations.get(mainAgent.name) ?? []) : []),
+    [mainAgent, conversations]
+  )
 
   const rightPanel = useRightPanel(mainConversation)
 
