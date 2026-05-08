@@ -74,13 +74,14 @@ export function AgentChatPanel({
 }
 
 interface MainChatPanelProps {
+  visible: boolean
   conversation: ConversationMessage[]
   onSend: (message: string) => void
 }
 
-export function MainChatPanel({ conversation, onSend }: MainChatPanelProps) {
+export function MainChatPanel({ visible, conversation, onSend }: MainChatPanelProps) {
   const [draft, setDraft] = useState('')
-  const { ref: logRef, handleScroll } = useAutoScroll(conversation.length, true)
+  const { ref: logRef, handleScroll } = useAutoScroll(conversation.length, visible)
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key !== 'Enter' || e.shiftKey) return

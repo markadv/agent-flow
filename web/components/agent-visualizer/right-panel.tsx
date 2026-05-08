@@ -63,7 +63,7 @@ export function RightPanel({
       </div>
       {/* display:none preserves component state (skill selection, pan position) without unmounting */}
       <div style={{ flex: 1, overflow: 'hidden', display: activeTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
-        <MainChatPanel conversation={mainConversation} onSend={onSend} />
+        <MainChatPanel visible={activeTab === 'chat'} conversation={mainConversation} onSend={onSend} />
       </div>
       <div style={{ flex: 1, overflow: 'hidden', display: activeTab === 'brainstorm' ? 'flex' : 'none', flexDirection: 'column' }}>
         <BrainstormPanel visible html={brainstormHtml} onClose={onClose} />
