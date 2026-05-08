@@ -24,6 +24,29 @@ export function SkillFlowPanel({ visible, onClose }: SkillFlowPanelProps) {
     import('@viz-js/viz').then(({ instance }) => instance().then(v => { vizRef.current = v }))
   }, [])
 
+  useEffect(() => {
+    const container = svgContainerRef.current
+    if (!container) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const p = panRef.current
+      const f = e.deltaY < 0 ? 1.12 : 0.89
+      const rect = container.getBoundingClientRect()
+      p.tx = e.clientX - rect.left - (e.clientX - rect.left - p.tx) * f
+      p.ty = e.clientY - rect.top - (e.clientY - rect.top - p.ty) * f
+      p.scale *= f
+      const svg = container.querySelector('svg') as SVGSVGElement | null
+      if (svg) {
+        svg.style.transform = `translate(${p.tx}px,${p.ty}px) scale(${p.scale})`
+        svg.style.transformOrigin = '0 0'
+      }
+    }
+
+    container.addEventListener('wheel', handleWheel, { passive: false })
+    return () => container.removeEventListener('wheel', handleWheel)
+  }, [])
+
   const selectedSkill: SkillInfo | undefined = skills[selectedIndex]
 
   const fitToContainer = useCallback(() => {
@@ -152,20 +175,7 @@ export function SkillFlowPanel({ visible, onClose }: SkillFlowPanelProps) {
                 svg.style.transformOrigin = '0 0'
               }}
               onMouseUp={() => { panRef.current.dragging = false }}
-              onWheel={e => {
-                e.preventDefault()
-                const p = panRef.current
-                const f = e.deltaY < 0 ? 1.12 : 0.89
-                const rect = svgContainerRef.current!.getBoundingClientRect()
-                p.tx = e.clientX - rect.left - (e.clientX - rect.left - p.tx) * f
-                p.ty = e.clientY - rect.top - (e.clientY - rect.top - p.ty) * f
-                p.scale *= f
-                const svg = svgContainerRef.current?.querySelector('svg') as SVGSVGElement | null
-                if (svg) {
-                  svg.style.transform = `translate(${p.tx}px,${p.ty}px) scale(${p.scale})`
-                  svg.style.transformOrigin = '0 0'
-                }
-              }}
+              onMouseLeave={() => { panRef.current.dragging = false }}
               onDoubleClick={fitToContainer}
             />
           </div>
